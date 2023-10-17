@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Jobs\PaymentRegisterJob;
+use App\Mail\NewPaymentRegisterMail;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,7 +28,6 @@ class Payment extends Model
         'currency_id',
         'nombre',
         'email',
-        'status',
         'user_id',
         'plan_id',
         'image',
@@ -47,12 +48,16 @@ class Payment extends Model
 
         parent::boot();
 
-        static::created(function($user){
+        static::created(function($payment){
 
-            PaymentRegisterJob::dispatch(
-                $user
-            )->onQueue("high");
+            // PaymentRegisterJob::dispatch(
+            //     $user
+            // )->onQueue("high");
+
+        Mail::to('soporte@svcbmf.org')->send(new NewPaymentRegisterMail($payment));
+
         });
+
 
     }
 

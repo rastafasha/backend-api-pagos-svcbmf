@@ -84,7 +84,8 @@ class AdminDirectoryController extends Controller
         $directory->linkedin = $validatedData['linkedin'];
         $directory->vcard = $validatedData['vcard'];
         $directory->status = $validatedData['status'];
-        $directory->image = $path;
+        // $directory->image = $path;
+       
         $directory->save();
 
 
@@ -159,7 +160,13 @@ class AdminDirectoryController extends Controller
         $directory->linkedin = $request->linkedin;
         $directory->vcard = $request->vcard;
         $directory->status = $request->status;
-        $directory->image = $request->image;
+        // $directory->image = $request->image;
+
+        if(empty($directory->image)){
+            $directory->update();
+        }else{
+           $directory->image = $request->image;
+        }
         $directory->update();
         return $directory;
     }

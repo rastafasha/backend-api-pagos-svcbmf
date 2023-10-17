@@ -5,16 +5,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\ImageController;
-use App\Http\Controllers\Auth\ForgotPasswordController;
-use App\Http\Controllers\Auth\ChangeForgotPasswordControllerController;
 use App\Http\Controllers\ContactFormController;
+use App\Http\Controllers\ActualizacionController;
 use App\Http\Controllers\Admin\AdminPlanController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Admin\AdminCurrencyController;
 use App\Http\Controllers\Auth\ChangePasswordController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\tiposdepagoController;
+use App\Http\Controllers\Admin\AdminDirectoryController;
 use App\Http\Controllers\Directories\PublicDirectoryController;
-use App\Http\Controllers\ActualizacionController;
+use App\Http\Controllers\Auth\ChangeForgotPasswordControllerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -54,6 +56,9 @@ Route::group(['middleware' => 'api'], function ($router) {
 
     // Pagos
     require __DIR__ . '/api_routes/payment.php';
+    
+    // Tipos de Pagos
+    require __DIR__ . '/api_routes/paymentMethod.php';
 
     // Productos
     require __DIR__ . '/api_routes/plans.php';
@@ -112,6 +117,12 @@ Route::group(['middleware' => 'api'], function ($router) {
 
     Route::get('/currencies', [AdminCurrencyController::class, 'index'])
         ->name('currency.index');
+
+        Route::get('/directory/show/{directory}', [AdminDirectoryController::class, 'directoryShow'])
+        ->name('directory.show');
+
+    Route::get('/paymentmethods', [tiposdepagoController::class, 'index'])
+        ->name('paymentmethods.index');
 
     Route::post('/currency/store', [AdminCurrencyController::class, 'currencyStore'])
         ->name('currency.store');

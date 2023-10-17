@@ -92,19 +92,21 @@ class AdminPaymentController extends Controller
      */
     public function paymentShow(Payment $payment)
     {
-        // $this->authorize('paymentShow', Payment::class);
-        // $payment = Payment::select([
-        //     "id", "referencia", "metodo", "bank_name", "monto",
-        //     "validacion", "currency_id", "nombre", "email", "status", "user_id", "plan_id",
-        //     "image" ])
-        //     ->with(["currencies"])
-        //     ->find($payment);
+       
 
         if (!$payment) {
             return response()->json([
                 'message' => 'Pago not found.'
             ], 404);
         }
+
+        // $payment = Payment::select([
+        //         "id", "referencia", "metodo", "bank_name", "monto",
+        //     "validacion", "currency_id", "nombre", "email", "status", "user_id", "plan_id",
+        //     "image"
+        // ])
+        // ->with(["users","plans"])
+        //     ->find($payment);
 
         return response()->json([
             'code' => 200,

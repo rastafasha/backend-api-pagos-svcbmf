@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PaymentMethodController extends Controller
 {
@@ -14,7 +15,7 @@ class PaymentMethodController extends Controller
      */
     public function index()
     {
-        //
+       //
     }
 
     /**
@@ -47,6 +48,7 @@ class PaymentMethodController extends Controller
     public function show(PaymentMethod $paymentMethod)
     {
         //
+       
     }
 
     /**
@@ -70,6 +72,8 @@ class PaymentMethodController extends Controller
     public function update(Request $request, PaymentMethod $paymentMethod)
     {
         //
+
+        
     }
 
     /**
@@ -81,5 +85,7 @@ class PaymentMethodController extends Controller
     public function destroy(PaymentMethod $paymentMethod)
     {
         //
+
     }
+
 }
