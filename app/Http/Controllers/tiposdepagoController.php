@@ -89,30 +89,26 @@ class tiposdepagoController extends Controller
      * @param  \App\Models\Tiposdepago  $tiposdepago
      * @return \Illuminate\Http\Response
      */
-    public function paymentUpdate(Tiposdepago $request, $id)
+    public function paymentUpdate(Request $request, $id)
     {
-        //
-
-        try {
-            DB::beginTransaction();
-
-            $input = $request->all();
-            $tiposdepago = Tiposdepago::find($id);
-            $tiposdepago->update($input);
-
-
-            DB::commit();
-            return response()->json([
-                'code' => 200,
-                'status' => 'Update tiposdepago success',
-                'tiposdepago' => $tiposdepago,
-            ], 200);
-        } catch (\Throwable $exception) {
-            DB::rollBack();
-            return response()->json([
-                'message' => 'Error no update'  . $exception,
-            ], 500);
-        }
+       $tipodepago = Tiposdepago::findOrfail($id);
+        $tipodepago->bankAccount = $request->bankAccount;
+        $tipodepago->bankAccountType = $request->bankAccountType;
+        $tipodepago->bankName = $request->bankName;
+        $tipodepago->ciorif = $request->ciorif;
+        $tipodepago->clientId = $request->clientId;
+        $tipodepago->email = $request->email;
+        $tipodepago->id = $request->id;
+        $tipodepago->paypalSecret = $request->paypalSecret;
+        $tipodepago->sandoxMode = $request->sandoxMode;
+        $tipodepago->telefono = $request->telefono;
+        $tipodepago->type = $request->type;
+        $tipodepago->user = $request->user;
+        
+        
+        
+        $tipodepago->update();
+        return $tipodepago;
     }
 
     /**
@@ -121,30 +117,30 @@ class tiposdepagoController extends Controller
      * @param  \App\Models\Tiposdepago  $paymentMethod
      * @return \Illuminate\Http\Response
      */
-    public function paymentDestroy(Tiposdepago $tiposdepago)
+    public function paymentDestroy(Tiposdepago $tiposdepago, $id)
     {
-        //
+        $tiposdepago =  Tiposdepago::where('id', $id)
+                        ->first();
 
-        // $this->authorize('paymentDestroy', Tiposdepago::class);
+        if(!empty($tiposdepago)){
 
-        try {
-            DB::beginTransaction();
-
-
+            // borrar
             $tiposdepago->delete();
-
-            DB::commit();
-            return response()->json([
+            // devolver respuesta
+            $data = [
                 'code' => 200,
-                'status' => 'tiposdepago delete',
-            ], 200);
-        } catch (\Throwable $exception) {
-            DB::rollBack();
-            return response()->json([
+                'status' => 'success',
+                'tiposdepago' => $tiposdepago
+            ];
+        }else{
+            $data = [
+                'code' => 404,
                 'status' => 'error',
-                'message' => 'Borrado fallido. Conflicto',
-            ], 409);
+                'message' => 'el tiposdepago no existe'
+            ];
         }
+
+        return response()->json($data, $data['code']);
     }
 
     public function UpdateStatus(Request $request, $id)

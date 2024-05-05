@@ -84,6 +84,10 @@ class AdminDirectoryController extends Controller
         $directory->linkedin = $validatedData['linkedin'];
         $directory->vcard = $validatedData['vcard'];
         $directory->status = $validatedData['status'];
+        
+        if($directory->image){
+            $directory->image = $path;
+        }
         // $directory->image = $path;
        
         $directory->save();
@@ -136,7 +140,7 @@ class AdminDirectoryController extends Controller
     public function directoryUpdate(Request $request, $id)
     {
         $directory = Directory::findOrfail($id);
-        $directory->user_id = $request->user_id;
+        
         $directory->nombre = $request->nombre;
         $directory->surname = $request->surname;
         $directory->especialidad = $request->especialidad;
@@ -160,13 +164,15 @@ class AdminDirectoryController extends Controller
         $directory->linkedin = $request->linkedin;
         $directory->vcard = $request->vcard;
         $directory->status = $request->status;
-        // $directory->image = $request->image;
+        
+        // if($directory->user_id){
+        //     $directory->user_id = $request->user_id;
+        // }
+        
+        // if($directory->image){
+        //     $directory->image = $request->image;
+        // }
 
-        if(empty($directory->image)){
-            $directory->update();
-        }else{
-           $directory->image = $request->image;
-        }
         $directory->update();
         return $directory;
     }

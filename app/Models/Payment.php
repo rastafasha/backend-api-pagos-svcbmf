@@ -80,7 +80,7 @@ class Payment extends Model
 
     public function currencies()
     {
-        return $this->hasMany(Currency::class, 'id');
+        return $this->hasMany(Currency::class, 'currency_id');
     }
 
     public function plans()
