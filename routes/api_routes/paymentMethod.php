@@ -1,34 +1,26 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\tiposdepagoController;
+use App\Http\Controllers\PaymentMethodController;
 
 //pagos
-Route::get('/paymentmethods', [tiposdepagoController::class, 'index'])
-    ->name('paymentmethods.index');
-    
-Route::get('/paymentmethods/activos', [tiposdepagoController::class, 'activos'])
-    ->name('paymentmethods.activos');
+Route::get('/paymentmethod', [PaymentMethodController::class, 'index'])
+    ->name('payments.index');
 
-Route::post('/paymentmethods/store', [tiposdepagoController::class, 'paymentStore'])
-    ->name('paymentmethod.store');
+Route::post('/paymentmethod/store', [PaymentMethodController::class, 'paymentStore'])
+    ->name('payment.store');
 
-Route::get('/paymentmethods/show/{tipodepago:id}', [tiposdepagoController::class, 'paymentShow'])
-    ->name('paymentmethod.show');
+Route::get('/paymentmethod/show/{payment}', [PaymentMethodController::class, 'paymentShow'])
+    ->name('payment.show');
 
-Route::put('/paymentmethods/update/{id}', [tiposdepagoController::class, 'paymentUpdate'])
-    ->name('paymentmethod.update');
+Route::put('/paymentmethod/update/{id}', [PaymentMethodController::class, 'paymentUpdate'])
+    ->name('payment.update');
 
-Route::delete('/paymentmethods/destroy/{paymentmethod:id}', [tiposdepagoController::class, 'paymentDestroy'])
-    ->name('paymentmethod.destroy');
+Route::put('/paymentmethod/statusupdate/{id}', [PaymentMethodController::class, 'paymentUpdateStatus'])
+    ->name('payment.statusupdate');
 
+Route::delete('/paymentmethod/destroy/{payment:id}', [PaymentMethodController::class, 'paymentDestroy'])
+    ->name('payment.destroy');
 
-Route::get('/paymentmethods/search/', [tiposdepagoController::class, 'search'])
-    ->name('paymentmethod.search');
-
-
-    Route::put('/paymentmethods/update/status/{paymentmethod:id}', [tiposdepagoController::class, 'UpdateStatus'])
-    ->name('paymentmethod.status');
-
-
+Route::get('paymentmethod/activos/', [PaymentMethodController::class, 'activos'])
+    ->name('payment.activos');

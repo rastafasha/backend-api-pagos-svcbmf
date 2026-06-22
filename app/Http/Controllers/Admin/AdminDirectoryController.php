@@ -8,9 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DirectoryStoreRequest;
-use App\Http\Requests\DirectoryUpdateRequest;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class AdminDirectoryController extends Controller
 {
@@ -50,61 +49,29 @@ class AdminDirectoryController extends Controller
      */
     public function directoryStore(DirectoryStoreRequest $request)
     {
-        // $this->authorize('directoryStore', Directory::class);
-
-        try {
-            DB::beginTransaction();
-
-            $validatedData = $request->all();
-
-
-
-        $directory = new Directory();
-        $directory->user_id = auth()->user()->id;
-        $directory->nombre = $validatedData['nombre'];
-        $directory->surname = $validatedData['surname'];
-        $directory->especialidad = $validatedData['especialidad'];
-        $directory->universidad = $validatedData['universidad'];
-        $directory->ano = $validatedData['ano'];
-        $directory->org = $validatedData['org'];
-        $directory->website = $validatedData['website'];
-        $directory->email = $validatedData['email'];
-        $directory->direccion = $validatedData['direccion'];
-        $directory->direccion1 = $validatedData['direccion1'];
-        $directory->estado = $validatedData['estado'];
-        $directory->ciudad = $validatedData['ciudad'];
-        $directory->telefonos = $validatedData['telefonos'];
-        $directory->tel1 = $validatedData['tel1'];
-        $directory->telhome = $validatedData['telhome'];
-        $directory->telmovil = $validatedData['telmovil'];
-        $directory->telprincipal = $validatedData['telprincipal'];
-        $directory->facebook = $validatedData['facebook'];
-        $directory->instagram = $validatedData['instagram'];
-        $directory->twitter = $validatedData['twitter'];
-        $directory->linkedin = $validatedData['linkedin'];
-        $directory->vcard = $validatedData['vcard'];
-        $directory->status = $validatedData['status'];
         
-        if($directory->image){
-            $directory->image = $path;
-        }
-        // $directory->image = $path;
-       
-        $directory->save();
+        // $directory_is_valid = Directory::where("n_doc", $request->n_doc)->first();
 
+        // if ($directory_is_valid) {
+        //     return response()->json([
+        //         "message" => 403,
+        //         "message_text" => 'el directory ya existe'
+        //     ]);
+        // }
 
-            DB::commit();
-            return response()->json([
-                'message' => 'Directory created successfully',
-                'directory' => $directory,
-            ], 201);
-        } catch (\Throwable $exception) {
-            DB::rollBack();
-            return response()->json([
-                'message' => 'Error no crated' . $exception,
-            ], 500);
+        if ($request->hasFile('image')) {
+            $path = Storage::putFile("directories", $request->file('imagen'));
+            $request->request->add(["image" => $path]);
         }
-        // return Directory::create($request->all());
+
+        $directory = Directory::create($request->all());
+
+        return response()->json([
+            "message" => 200,
+            "directory" => $directory,
+        ]);
+
+        
     }
 
     /**
@@ -139,42 +106,23 @@ class AdminDirectoryController extends Controller
      */
     public function directoryUpdate(Request $request, $id)
     {
-        $directory = Directory::findOrfail($id);
         
-        $directory->nombre = $request->nombre;
-        $directory->surname = $request->surname;
-        $directory->especialidad = $request->especialidad;
-        $directory->universidad = $request->universidad;
-        $directory->ano = $request->ano;
-        $directory->org = $request->org;
-        $directory->website = $request->website;
-        $directory->email = $request->email;
-        $directory->direccion = $request->direccion;
-        $directory->direccion1 = $request->direccion1;
-        $directory->estado = $request->estado;
-        $directory->ciudad = $request->ciudad;
-        $directory->telefonos = $request->telefonos;
-        $directory->tel1 = $request->tel1;
-        $directory->telhome = $request->telhome;
-        $directory->telmovil = $request->telmovil;
-        $directory->telprincipal = $request->telprincipal;
-        $directory->facebook = $request->facebook;
-        $directory->instagram = $request->instagram;
-        $directory->twitter = $request->twitter;
-        $directory->linkedin = $request->linkedin;
-        $directory->vcard = $request->vcard;
-        $directory->status = $request->status;
-        
-        // if($directory->user_id){
-        //     $directory->user_id = $request->user_id;
-        // }
-        
-        // if($directory->image){
-        //     $directory->image = $request->image;
-        // }
 
-        $directory->update();
-        return $directory;
+         $directory = Directory::findOrFail($id);
+        if ($request->hasFile('imagen')) {
+            if ($directory->image) {
+                Storage::delete($directory->image);
+            }
+            $path = Storage::putFile("directories", $request->file('imagen'));
+            $request->request->add(["image" => $path]);
+        }
+
+        $directory->update($request->all());
+
+        return response()->json([
+            "message" => 200,
+            "directory" => $directory
+        ]);
     }
     
     public function directoryUpdateStatus(Request $request, $id)
@@ -218,121 +166,7 @@ class AdminDirectoryController extends Controller
         }
     }
 
-    protected function directoryInput(string $file = null): array
-    {
-        return [
-            "nombre" => request("nombre"),
-            "surname" => request("surname"),
-            "especialidad" => request("especialidad"),
-            "universidad" => request("universidad"),
-            "ano" => request("ano"),
-            "org" => request("org"),
-            "website" => request("website"),
-            "email" => request("email"),
-            "direccion" => request("direccion"),
-            "direccion1" => request("direccion1"),
-            "estado" => request("estado"),
-            "ciudad" => request("ciudad"),
-            "telefonos" => request("telefonos"),
-            "tel1" => request("tel1"),
-            "telhome" => request("telhome"),
-            "telmovil" => request("telmovil"),
-            "telprincipal" => request("telprincipal"),
-            "facebook" => request("facebook"),
-            "instagram" => request("instagram"),
-            "twitter" => request("twitter"),
-            "linkedin" => request("linkedin"),
-            "image" => $file,
-            "vcard" => request("vcard"),
-            "status" => request("status"),
-        ];
-    }
 
-    /**
-     * @param UploadedFile $file
-     * @return string
-     */
-    protected function generateFileName(UploadedFile $file): string {
-        $extension = $file->getClientOriginalExtension();
-        $fullName = $file->getClientOriginalName();
-        $pathFileName = trim(pathinfo($fullName, PATHINFO_FILENAME));
-        $secureMaxName = substr(Str::slug($pathFileName), 0, 90);
-        return sprintf('%s-%s.%s', $secureMaxName, now()->timestamp, $extension);
-    }
-
-
-
-
-    public function upload(Request $request)
-     {
-         // recoger la imagen de la peticion
-         $image = $request->file('file0');
-         // validar la imagen
-         $validate = \Validator::make($request->all(),[
-             'file0' => 'required|image|mimes:jpg,jpeg,png,gif'
-         ]);
-         //guardar la imagen en un disco
-         if(!$image || $validate->fails()){
-             $data = [
-                 'code' => 400,
-                 'status' => 'error',
-                 'message' => 'Error al subir la imagen'
-             ];
-         }else{
-            $extension = $image->getClientOriginalExtension();
-            $image_name = $image->getClientOriginalName();
-            $pathFileName = trim(pathinfo($image_name, PATHINFO_FILENAME));
-            $secureMaxName = substr(Str::slug($image_name), 0, 90);
-            $image_name = now().$secureMaxName.'.'.$extension;
-
-             \Storage::disk('directories')->put($image_name, \File::get($image));
-
-             $data = [
-                 'code' => 200,
-                 'status' => 'success',
-                 'image' => $image_name
-             ];
-
-         }
-
-         return response()->json($data, $data['code']);// devuelve un objeto json
-     }
-
-     public function getImage($filename)
-     {
-
-         //comprobar si existe la imagen
-         $isset = \Storage::disk('directories')->exists($filename);
-         if ($isset) {
-             $file = \Storage::disk('directories')->get($filename);
-             return new Response($file, 200);
-         } else {
-             $data = array(
-                 'status' => 'error',
-                 'code' => 404,
-                 'mesaje' => 'Imagen no existe',
-             );
-
-             return response()->json($data, $data['code']);
-         }
-
-     }
-
-     public function deleteFotoDirectory($id)
-     {
-         $directory = Directory::findOrFail($id);
-         \Storage::delete('directories/' . $directory->image);
-         $directory->image = '';
-         $directory->save();
-         return response()->json([
-             'data' => $directory,
-             'msg' => [
-                 'summary' => 'Archivo eliminado',
-                 'detail' => '',
-                 'code' => ''
-             ]
-         ]);
-     }
 
      public function search(Request $request){
         return Directory::search($request->buscar);

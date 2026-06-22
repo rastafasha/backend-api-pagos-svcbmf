@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class PaymentMethodController extends Controller
 {
@@ -15,18 +14,21 @@ class PaymentMethodController extends Controller
      */
     public function index()
     {
-       //
+        $paymentmethods = PaymentMethod::orderBy('created_at', 'DESC')
+        ->with([
+            "currencies",
+        ])
+        ->get();
+
+
+        return response()->json([
+            'code' => 200,
+            'status' => 'Listar todos los Pagos',
+            'paymentmethods' => $paymentmethods,
+        ], 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
+    
 
     /**
      * Store a newly created resource in storage.
@@ -34,9 +36,9 @@ class PaymentMethodController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function paymentStore(Request $request)
     {
-        //
+        return PaymentMethod::create($request->all());
     }
 
     /**
@@ -45,22 +47,22 @@ class PaymentMethodController extends Controller
      * @param  \App\Models\PaymentMethod  $paymentMethod
      * @return \Illuminate\Http\Response
      */
-    public function show(PaymentMethod $paymentMethod)
+    public function paymentShow(PaymentMethod $paymentMethod)
     {
-        //
-       
+         if (!$paymentMethod) {
+            return response()->json([
+                'message' => 'Pago not found.'
+            ], 404);
+        }
+
+        return response()->json([
+            'code' => 200,
+            'status' => 'success',
+            'paymentMethod' => $paymentMethod,
+        ], 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\PaymentMethod  $paymentMethod
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(PaymentMethod $paymentMethod)
-    {
-        //
-    }
+    
 
     /**
      * Update the specified resource in storage.
@@ -69,11 +71,26 @@ class PaymentMethodController extends Controller
      * @param  \App\Models\PaymentMethod  $paymentMethod
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, PaymentMethod $paymentMethod)
+    public function paymentUpdate(Request $request, PaymentMethod $id)
     {
-        //
-
+        $paymentMethod = PaymentMethod::findOrfail($id);
+        $paymentMethod->bankAccount = $request->bankAccount;
+        $paymentMethod->bankAccountType = $request->bankAccountType;
+        $paymentMethod->bankName = $request->bankName;
+        $paymentMethod->ciorif = $request->ciorif;
+        $paymentMethod->clientId = $request->clientId;
+        $paymentMethod->email = $request->email;
+        $paymentMethod->id = $request->id;
+        $paymentMethod->paypalSecret = $request->paypalSecret;
+        $paymentMethod->sandoxMode = $request->sandoxMode;
+        $paymentMethod->telefono = $request->telefono;
+        $paymentMethod->type = $request->type;
+        $paymentMethod->user = $request->user;
         
+        
+        
+        $paymentMethod->update();
+        return $paymentMethod;
     }
 
     /**
@@ -82,10 +99,51 @@ class PaymentMethodController extends Controller
      * @param  \App\Models\PaymentMethod  $paymentMethod
      * @return \Illuminate\Http\Response
      */
-    public function destroy(PaymentMethod $paymentMethod)
+    public function paymentDestroy(PaymentMethod $paymentMethod, $id)
     {
-        //
+        $paymentMethod =  PaymentMethod::where('id', $id)
+                        ->first();
 
+        if(!empty($paymentMethod)){
+
+            // borrar
+            $paymentMethod->delete();
+            // devolver respuesta
+            $data = [
+                'code' => 200,
+                'status' => 'success',
+                'paymentMethod' => $paymentMethod
+            ];
+        }else{
+            $data = [
+                'code' => 404,
+                'status' => 'error',
+                'message' => 'el tiposdepago no existe'
+            ];
+        }
+
+        return response()->json($data, $data['code']);
     }
 
+     public function paymentUpdateStatus(Request $request, $id)
+    {
+        $paymentMethod = PaymentMethod::findOrfail($id);
+        $paymentMethod->status = $request->status;
+        $paymentMethod->update();
+        return $paymentMethod;
+    }
+
+    public function activos()
+    {
+
+        $paymentMethods = PaymentMethod::orderBy('created_at', 'DESC')
+                
+                ->where('status', $status='ACTIVE')
+                ->get();
+            return response()->json([
+                'code' => 200,
+                'status' => 'Listar tiposdepagos activas',
+                'paymentMethods' => $paymentMethods,
+            ], 200);
+    }
 }

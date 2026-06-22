@@ -63,8 +63,6 @@ Route::group(['middleware' => 'api'], function ($router) {
     // Productos
     require __DIR__ . '/api_routes/plans.php';
 
-    // Actualizacion
-    require __DIR__ . '/api_routes/actualizacion.php';
 
     // users
     require __DIR__ . '/api_routes/users.php';

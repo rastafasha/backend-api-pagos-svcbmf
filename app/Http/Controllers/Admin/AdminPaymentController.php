@@ -10,6 +10,7 @@ use App\Http\Requests\PaymentStoreRequest;
 use App\Http\Requests\PaymentUpdateRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class AdminPaymentController extends Controller
 {
@@ -33,10 +34,10 @@ class AdminPaymentController extends Controller
         // $this->authorize('index', Payment::class);
 
         $payments = Payment::orderBy('created_at', 'DESC')
-        ->with([
-            "currencies",
-        ])
-        ->get();
+            ->with([
+                "currencies",
+            ])
+            ->get();
 
 
         return response()->json([
@@ -54,34 +55,35 @@ class AdminPaymentController extends Controller
      */
     public function paymentStore(PaymentStoreRequest $request)
     {
-        // $this->authorize('paymentStore', Payment::class);
+        if ($request->hasFile('image')) {
+            $path = Storage::putFile("payments", $request->file('image'));
+            $request->request->add(["image" => $path]);
+        }
 
-        // try {
-        //     DB::beginTransaction();
 
-        //     $payment = new Payment();
+        $payment = Payment::create([
+            "referencia" => $request->patient_id,
+            "metodo" => $request->appointment_id,
+            "bank_name" => $request->nombre,
+            "monto" => $request->monto,
+            "validacion" => $request->email,
+            "currency_id" => $request->bank_name,
+            "nombre" => $request->metodo,
+            "email" => $request->referencia,
+            "user_id" => $request->status,
+            "plan_id" => $request->tasabcv,
+            "status" => $request->tasabcv,
+            "image" => $path,
+            // "status_pay" =>$request->amount != $request->amount_add ? 2 : 1,
+        ]);
+        //envio de correo al doctor
+        // Mail::to($appointment->doctor->email)->send(new NewPaymentRegisterMail($payment));
+        // Mail::to($email_doctor)->send(new NewPaymentRegisterMail($payment));
 
-        //     $file = null;
-        //     if ($request->hasFile('image')) {
-        //         $file = Uploader::uploadFile('image', 'public/payments');
-        //     }
-
-        //     $input = $this->paymentInput($file);
-        //     $payment->fill($input)->save();
-
-        //     DB::commit();
-        //     return response()->json([
-        //         'message' => 'Payment created successfully',
-        //         'payment' => $payment,
-        //     ], 201);
-        // } catch (\Throwable $exception) {
-        //     DB::rollBack();
-        //     return response()->json([
-        //         'message' => 'Error no crated' . $exception,
-        //     ], 500);
-        // }
-
-        return Payment::create($request->all());
+        return response()->json([
+            "message" => 200,
+            "payment" => $payment,
+        ]);
     }
 
     /**
@@ -92,21 +94,19 @@ class AdminPaymentController extends Controller
      */
     public function paymentShow(Payment $payment)
     {
-       
+        // $this->authorize('paymentShow', Payment::class);
+        // $payment = Payment::select([
+        //     "id", "referencia", "metodo", "bank_name", "monto",
+        //     "validacion", "currency_id", "nombre", "email", "status", "user_id", "plan_id",
+        //     "image" ])
+        //     ->with(["currencies"])
+        //     ->find($payment);
 
         if (!$payment) {
             return response()->json([
                 'message' => 'Pago not found.'
             ], 404);
         }
-
-        // $payment = Payment::select([
-        //         "id", "referencia", "metodo", "bank_name", "monto",
-        //     "validacion", "currency_id", "nombre", "email", "status", "user_id", "plan_id",
-        //     "image"
-        // ])
-        // ->with(["users","plans"])
-        //     ->find($payment);
 
         return response()->json([
             'code' => 200,
@@ -122,7 +122,7 @@ class AdminPaymentController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function paymentUpdate(PaymentUpdateRequest $request,  $id)
+    public function paymentUpdate(PaymentUpdateRequest $request, $id)
     {
         try {
             DB::beginTransaction();
@@ -141,7 +141,7 @@ class AdminPaymentController extends Controller
         } catch (\Throwable $exception) {
             DB::rollBack();
             return response()->json([
-                'message' => 'Error no update'  . $exception,
+                'message' => 'Error no update' . $exception,
             ], 500);
         }
     }
@@ -179,36 +179,11 @@ class AdminPaymentController extends Controller
         }
     }
 
-    protected function paymentInput(string $file = null): array
-    {
-        return [
-            "referencia" => request("referencia"),
-            "metodo" => request("metodo"),
-            "bank_name" => request("bank_name"),
-            "monto" => request("monto"),
-            "validacion" => request("validacion"),
-            "currency_id" => request("currency_id"),
-            "nombre" => request("nombre"),
-            "email" => request("email"),
-            "user_id" => request("user_id"),
-            "plan_id" => request("plan_id"),
-            "status" => request("status"),
-            "image" => $file,
-        ];
-    }
-
-    protected function paymentInputUpdate(string $file = null): array
-    {
-        return [
-            "validacion" => request("validacion"),
-            "status" => request("status"),
-        ];
-    }
 
     public function recientes()
     {
         $payments = Payment::orderBy('created_at', 'DESC')
-        ->get();
+            ->get();
 
         return response()->json([
             'code' => 200,
@@ -218,81 +193,62 @@ class AdminPaymentController extends Controller
     }
 
 
-     // subir imagen avatar
-     public function upload(Request $request)
-     {
-         // recoger la imagen de la peticion
-         $image = $request->file('file0');
-         // validar la imagen
-         $validate = \Validator::make($request->all(),[
-             'file0' => 'required|image|mimes:jpg,jpeg,png,gif'
-         ]);
-         //guardar la imagen en un disco
-         if(!$image || $validate->fails()){
-             $data = [
-                 'code' => 400,
-                 'status' => 'error',
-                 'message' => 'Error al subir la imagen'
-             ];
-         }else{
-            $extension = $image->getClientOriginalExtension();
-            $image_name = $image->getClientOriginalName();
-            $pathFileName = trim(pathinfo($image_name, PATHINFO_FILENAME));
-            $secureMaxName = substr(Str::slug($image_name), 0, 90);
-            $image_name = now().$secureMaxName.'.'.$extension;
+    public function updateStatus(Request $request, $id)
+    {
+        // 1. Buscamos el pago (siempre viene el ID)
+        $payment = Payment::findOrFail($id);
+        $payment->status = $request->status;
+        $payment->motivo_rechazo = $request->motivo_rechazo;
+        $payment->save();
 
-             \Storage::disk('payments')->put($image_name, \File::get($image));
+        // 2. Si es RECHAZADO, terminamos aquí para evitar errores de null
+        if ($request->status === 'REJECTED') {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Pago rechazado y notificado correctamente'
+            ]);
+        }
 
-             $data = [
-                 'code' => 200,
-                 'status' => 'success',
-                 'image' => $image_name
-             ];
+        if ($request->status === 'APPROVED') {
+            // Mail::to($appointment->patient->email)->send(new ConfirmationAppointment($appointment));
 
-         }
+        }
+        return response()->json([
+            "message" => 200,
+            "payment" => $payment,
 
-         //return response($data, $data['code'])->header('Content-Type', 'text/plain'); //devuelve el resultado
+        ]);
 
-         return response()->json($data, $data['code']);// devuelve un objeto json
-     }
+    }
 
-     public function getImage($filename)
-     {
+    public function pagosbyUser(Request $request, $patient_id)
+    {
 
-         //comprobar si existe la imagen
-         $isset = \Storage::disk('payments')->exists($filename);
-         if ($isset) {
-             $file = \Storage::disk('payments')->get($filename);
-             return new Response($file, 200);
-         } else {
-             $data = array(
-                 'status' => 'error',
-                 'code' => 404,
-                 'mesaje' => 'Imagen no existe',
-             );
+        $payments = Payment::where("patient_id", $patient_id)->orderBy('created_at', 'DESC')
+            ->get();
 
-             return response()->json($data, $data['code']);
-         }
+        return response()->json([
+            'code' => 200,
+            'status' => 'success',
+            "payments" => $payments,
+        ], 200);
+    }
 
-     }
+    public function pagosPendientes()
+    {
 
-     public function deleteFotoPayment($id)
-     {
-         $payment = Payment::findOrFail($id);
-         \Storage::delete('payments/' . $payment->image);
-         $payment->image = '';
-         $payment->save();
-         return response()->json([
-             'data' => $payment,
-             'msg' => [
-                 'summary' => 'Archivo eliminado',
-                 'detail' => '',
-                 'code' => ''
-             ]
-         ]);
-     }
+        $payments = Payment::where('status', 'PENDING')->orderBy("id", "desc")
+            ->paginate(10);
+        return response()->json([
+            "total" => $payments->total(),
+            "payments" => $payments
+        ]);
 
-     public function search(Request $request){
+    }
+
+
+    public function search(Request $request)
+    {
         return Payment::search($request->buscar);
     }
 }
