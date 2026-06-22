@@ -54,29 +54,24 @@ class AdminUserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function userShow(User $user)
-    {
-        // $this->authorize('userShow', User::class);
+{
+    // 🛡️ Nota: Con Route Model Binding, si el usuario no existe, 
+    // Laravel arroja un 404 automáticamente antes de entrar aquí.
+    // Por lo tanto, el "if (!$user)" ya no es necesario.
 
-        if (!$user) {
-            return response()->json([
-                'message' => 'User not found.'
-            ], 404);
-        }
+    // 🚀 Cargamos las relaciones dinámicamente sobre el usuario actual
+    $user->load(["payments", "directories",]);
 
-        $user = User::select([
-            "id", "username", "email", "role"
-        ])
-            ->with(["payments",
-                    "directories"
-            ])
-            ->find($user);
+    // 🎯 Filtramos solo los campos que necesitas exponer en la respuesta
+    // Esto evita romper la instancia del modelo y mantiene el formato de objeto {}
+    $userResponse = $user->only(["id", "username", "email", "role", "payments", "directories"]);
 
-        return response()->json([
-            'code' => 200,
-            'status' => 'success',
-            'user' => $user,
-        ], 200);
-    }
+    return response()->json([
+        'code' => 200,
+        'status' => 'success',
+        'user' => $userResponse,
+    ], 200);
+}
 
     /**
      * Update the specified resource in storage.

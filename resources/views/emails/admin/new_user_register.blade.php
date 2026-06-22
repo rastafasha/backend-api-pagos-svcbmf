@@ -12,7 +12,7 @@ Se has registrado un nuevo usuario
 
 <br><br>
 @component('mail::button', [
-    'url' => env('APP_URL')
+    'url' => env('https://www.svcbmf.org/pagossvc/')
 ])
     Ir a la web
 @endcomponent

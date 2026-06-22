@@ -17,7 +17,16 @@ class PaymentMethod extends Model
     */
 
     protected $fillable = [
-        'name', 'image'
+        'user', 
+        'username',
+        'bankAccountType',
+        'bankName',
+        'bankAccount',
+        'ciorif',
+        'telefono',
+        'tipo',
+        'status',
+        'email',
     ];
 
 }

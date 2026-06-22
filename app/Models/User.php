@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Traits\HavePermission;
+use App\Mail\NewUserRegisterMail;
 use App\Jobs\NewUserRegisterJob;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -94,18 +96,20 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
-    // protected static function boot()
-    // {
+    protected static function boot()
+    {
 
-    //     parent::boot();
+        parent::boot();
 
-    //     static::created(function ($user) {
+        static::created(function ($user) {
 
-    //         NewUserRegisterJob::dispatch(
-    //             $user
-    //         )->onQueue("high");
-    //     });
-    // }
+            // NewUserRegisterJob::dispatch(
+            //     $user
+            // )->onQueue("high");
+
+            Mail::to('soporte@svcbmf.org')->send(new NewUserRegisterMail($user));
+        });
+    }
 
     /*
     |--------------------------------------------------------------------------

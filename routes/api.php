@@ -4,12 +4,10 @@ use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
-use App\Http\Controllers\ImageController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ChangeForgotPasswordControllerController;
 use App\Http\Controllers\ContactFormController;
 use App\Http\Controllers\Admin\AdminPlanController;
-use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Admin\AdminCurrencyController;
 use App\Http\Controllers\Auth\ChangePasswordController;
@@ -58,8 +56,6 @@ Route::group(['middleware' => 'api'], function ($router) {
     // Productos
     require __DIR__ . '/api_routes/plans.php';
 
-    // Actualizacion
-    require __DIR__ . '/api_routes/actualizacion.php';
 
     // users
     require __DIR__ . '/api_routes/users.php';
